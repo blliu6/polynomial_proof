@@ -66,8 +66,12 @@ class Env:
             print(sum(e * poly))
 
         if done:
+            ans = 0
             for i, e in enumerate(self.memory):
-                print(f'{coff[i][0]} * ({sum(e * poly)})', end='+')
+                ans += coff[i][0] * sp.sympify(sum(e * poly))
+                end = '+' if i < len(self.memory) - 1 else '\n'
+                print(f'{coff[i][0]} * ({sum(e * poly)})', end=end)
+            print(f'\nans:{sp.expand(ans)}')
 
     def compute_reward(self):
         x = cp.Variable((self.len_memory, 1))
