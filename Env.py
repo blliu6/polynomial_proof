@@ -11,6 +11,7 @@ class Env:
         self.n = n  # the number of variable
         self.deg = deg  # the highest degree of polynomial
         self.poly, self.poly_list = monomials(self.n, self.deg)
+        self.sp_poly = np.array([sp.sympify(e) for e in self.poly])
         self.len_vector = len(self.poly)
         self.dic = {}
         for i, e in enumerate(self.poly_list):
@@ -60,18 +61,16 @@ class Env:
         return next_state, reward, done
 
     def visualization(self, done, coff):
-        poly = np.array([sp.sympify(e) for e in self.poly])
-        print('poly:', poly)
-        for e in self.memory:
-            print(sum(e * poly))
-
-        if done:
-            ans = 0
-            for i, e in enumerate(self.memory):
-                ans += coff[i][0] * sp.sympify(sum(e * poly))
-                end = '+' if i < len(self.memory) - 1 else '\n'
-                print(f'{coff[i][0]} * ({sum(e * poly)})', end=end)
-            print(f'\nans:{sp.expand(ans)}')
+        pass
+        # for e in self.memory:
+        #     print(sum(e * poly))
+        # if done or True:
+        #     ans = 0
+        #     for i, e in enumerate(self.memory):
+        #         ans += coff[i][0] * sp.sympify(sum(e * poly))
+        #         end = '+' if i < len(self.memory) - 1 else '\n'
+        #         print(f'{coff[i][0]} * ({sum(e * poly)})', end=end)
+        #     print(f'\nans:{sp.expand(ans)}')
 
     def compute_reward(self):
         x = cp.Variable((self.len_memory, 1))
@@ -92,6 +91,9 @@ class Env:
         if prob.status == cp.OPTIMAL:
             # print('Lambda:', y.value)
             # print('Reward:', x.value)
+            s = self.coefficient_matrix @ x.value
+            # print('s:', s)
+            print('sum:', sum(self.sp_poly @ s))
             return y.value, x.value
         else:
             return None, None
