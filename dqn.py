@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('/home/blliu/pythonproject/polynomial_proof')
 
 import random
@@ -21,7 +22,7 @@ class ReplayBuffer:
     def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
         transitions = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = zip(*transitions)
-        return np.array(state), action, reward, next_state, done
+        return np.array(state), np.array(action), reward, next_state, done
 
     def size(self):  # 目前buffer中数据的数量
         return len(self.buffer)
