@@ -1,8 +1,9 @@
+import sys
+sys.path.append('/home/blliu/pythonproject/polynomial_proof')
+
 import random
-import gymnasium as gym
 import collections
 import numpy as np
-from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -65,7 +66,7 @@ class DQN:
         return action
 
     def get_next_q(self, next_state, action_map):
-        res = torch.empty((len(next_state), 1))
+        res = torch.empty((len(next_state), 1)).to(self.device)
         for i, state in enumerate(next_state):
             action = action_map[tuple(state)]
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
