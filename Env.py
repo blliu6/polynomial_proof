@@ -23,9 +23,16 @@ class Env:
         self.len_memory = 0
         self.coefficient_matrix = None
         self.set_memory = None
+        self.last_gamma = None
+        self.state = None
+        self.action = None
+        self.action_ = None
+        self.map = {}
 
     def reset(self):
         self.episode = 0
+        self.memory = []
+        self.action = None
         for i in range(self.n):
             tmp = [0] * self.len_vector
             tmp[i + 1] = 1
@@ -34,45 +41,51 @@ class Env:
             tmp[0], tmp[i + 1] = 1, -1
             self.memory.append(tmp)
         self.len_memory = len(self.memory)
+
+        self.action_ = np.array(self.memory)
+        for item in self.memory:
+            tmp = np.concatenate((np.array([item] * self.n * 2), self.action_), axis=1)
+            if self.action is None:
+                self.action = tmp
+            else:
+                self.action = np.concatenate((self.action, tmp), axis=0)
+
         self.coefficient_matrix = np.array(self.memory).T
         self.set_memory = set([tuple(e) for e in self.memory])
+        self.last_gamma, _ = self.compute_linear_programming()
 
+        self.map[tuple(self.state)] = self.action
         # print(self.coefficient_matrix)
         # print(self.memory)
+        return self.state, _
 
     def step(self, action):
         self.episode += 1
         # action [0,2*n*|M|-1]
         pos = action // (2 * self.n)
         pos_x = action % (2 * self.n)
-        if pos_x > self.n - 1:
-            next_state = polynomial_mul_(self.memory[pos], (1, pos_x - self.n + 1), self.poly_list, self.dic)
+        if pos_x % 2:
+            new_poly = polynomial_mul_(self.memory[pos], (1, pos_x // 2 + 1), self.poly_list, self.dic)
         else:
-            next_state = polynomial_mul_(self.memory[pos], (0, pos_x + 1), self.poly_list, self.dic)
+            new_poly = polynomial_mul_(self.memory[pos], (0, pos_x // 2 + 1), self.poly_list, self.dic)
 
-        self.add_memory(next_state)
-        gamma, coff = self.compute_reward()
+        self.add_memory(new_poly)
+        print(f'The iteration:{self.episode}')
+        print(f'The action:{action}')
+        gamma, coff = self.compute_linear_programming()
 
-        reward = gamma
+        reward = gamma - self.last_gamma
+        reward = -0.1 if reward == 0 else reward
+        self.last_gamma = gamma
         done = True if gamma >= 0 else False
-        print('reward:', reward, done, self.len_memory)
-        self.visualization(done, coff)
+        reward = reward + 1 if done else reward
+        truncated = True if self.episode > self.max_episode else False
+        print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory)
+        # self.visualization(done, coff)
+        self.map[tuple(self.state)] = self.action
+        return self.state, reward, done, truncated, self.episode
 
-        return next_state, reward, done
-
-    def visualization(self, done, coff):
-        pass
-        # for e in self.memory:
-        #     print(sum(e * poly))
-        # if done or True:
-        #     ans = 0
-        #     for i, e in enumerate(self.memory):
-        #         ans += coff[i][0] * sp.sympify(sum(e * poly))
-        #         end = '+' if i < len(self.memory) - 1 else '\n'
-        #         print(f'{coff[i][0]} * ({sum(e * poly)})', end=end)
-        #     print(f'\nans:{sp.expand(ans)}')
-
-    def compute_reward(self):
+    def compute_linear_programming(self):
         x = cp.Variable((self.len_memory, 1))
         y = cp.Variable()
         no_constant = self.coefficient_matrix[1:]
@@ -92,7 +105,9 @@ class Env:
             # print('Lambda:', y.value)
             # print('Reward:', x.value)
             s = self.coefficient_matrix @ x.value
+            self.state = list(s.T[0])
             # print('s:', s)
+            print('state:', self.state)
             print('sum:', sum(self.sp_poly @ s))
             return y.value, x.value
         else:
@@ -105,6 +120,8 @@ class Env:
             self.memory.append(memory)
             self.len_memory += 1
             self.coefficient_matrix = np.concatenate((self.coefficient_matrix, np.array([memory]).T), axis=1)
+            self.action = np.concatenate(
+                (self.action, np.concatenate((np.array([memory] * self.n * 2), self.action_), axis=1)), axis=0)
         # print(self.coefficient_matrix)
 
 
