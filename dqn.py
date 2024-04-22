@@ -59,6 +59,7 @@ class DQN:
 
         if load:
             self.q_net.load_state_dict(torch.load('./model/proof.pth'))
+            print('Parameters loaded successfully!')
 
     def take_action(self, state, action):
         if np.random.random() < self.epsilon:

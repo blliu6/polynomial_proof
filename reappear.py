@@ -5,6 +5,12 @@ sys.path.append('/home/blliu/pythonproject/polynomial_proof')
 from Env import Env
 from dqn import DQN
 import torch
+import random
+import numpy as np
+
+random.seed(2024)
+np.random.seed(2024)
+torch.manual_seed(2024)
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 lr = 1e-3
