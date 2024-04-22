@@ -44,7 +44,7 @@ class Qnet(nn.Module):
 
 
 class DQN:
-    def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device):
+    def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, load=False):
         self.action_dim = action_dim
         self.q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
         self.target_q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
@@ -56,6 +56,9 @@ class DQN:
         self.count = 0
         self.device = device
         self.steps = 1e6
+
+        if load:
+            self.q_net.load_state_dict(torch.load('./model/proof.pth'))
 
     def take_action(self, state, action):
         if np.random.random() < self.epsilon:
