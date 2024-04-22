@@ -115,6 +115,7 @@ def moving_average(a, window_size):
 
 def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size):
     return_list = []
+    min_episode = 0
     for i_episode in range(num_episodes):
         episode_return = 0
         state, info = env.reset()
@@ -123,7 +124,7 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
             if done and agent.steps > info:
-                agent.steps = info
+                agent.steps, min_episode = info, i_episode
                 agent.save()
             action = env.action[action]
             replay_buffer.add(state, action, reward, next_state, done)
@@ -136,7 +137,7 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
                 agent.update(transition_dict)
         return_list.append(episode_return)
         print(f'Sum of reward: {episode_return}')
-    print(f'Minimum number of proof steps:{agent.steps}')
+    print(f'Minimum number of proof steps:{agent.steps}, Minimum episode:{min_episode}')
     return return_list
 
 
@@ -177,6 +178,7 @@ if __name__ == '__main__':
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
+    plt.savefig('./picture/1.png')
     plt.show()
 
     mv_return = moving_average(return_list, 9)
@@ -184,4 +186,5 @@ if __name__ == '__main__':
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
+    plt.savefig('./picture/2.png')
     plt.show()
