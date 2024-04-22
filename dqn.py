@@ -44,7 +44,8 @@ class Qnet(nn.Module):
 
 
 class DQN:
-    def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, load=False):
+    def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, name,
+                 load=False):
         self.action_dim = action_dim
         self.q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
         self.target_q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
@@ -56,9 +57,10 @@ class DQN:
         self.count = 0
         self.device = device
         self.steps = 1e6
+        self.name = name
 
         if load:
-            self.q_net.load_state_dict(torch.load('./model/proof.pth'))
+            self.q_net.load_state_dict(torch.load(f'./model/{self.name}.pth'))
             print('Parameters loaded successfully!')
 
     def take_action(self, state, action):
@@ -101,7 +103,7 @@ class DQN:
         self.count += 1
 
     def save(self):
-        torch.save(self.q_net.state_dict(), './model/proof.pth')
+        torch.save(self.q_net.state_dict(), f'./model/{self.name}.pth')
         print('Model saved successfully!')
 
 
@@ -118,16 +120,24 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
     return_list = []
     min_episode = 0
     for i_episode in range(num_episodes):
+        if i_episode % 10 == 0:
+            agent.epsilon = min(agent.epsilon + 0.01, 1)
         episode_return = 0
         state, info = env.reset()
         done, truncated = False, False
         while not done and not truncated:
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
-            if done and agent.steps > info:
+            action = env.action[action]
+
+            if done and agent.steps > info and agent.epsilon == 1:
                 agent.steps, min_episode = info, i_episode
                 agent.save()
-            action = env.action[action]
+
+            if reward > 0:
+                for i in range(9):
+                    replay_buffer.add(state, action, reward, next_state, done)
+
             replay_buffer.add(state, action, reward, next_state, done)
             state = next_state
             episode_return += reward
@@ -165,12 +175,11 @@ if __name__ == '__main__':
     max_episode = 1000
     env = Env(objective, n, deg, max_episode)
 
-    env_name = 'polynomial_proof'
-    # env = gym.make(env_name)
+    env_name = 'proof_4'
     replay_buffer = ReplayBuffer(buffer_size)
     state_dim = n + 1
     action_dim = None
-    agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device)
+    agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name)
 
     return_list = train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
 
@@ -179,7 +188,7 @@ if __name__ == '__main__':
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
-    plt.savefig('./picture/1.png')
+    plt.savefig(f'./picture/{env_name}_1.png')
     plt.show()
 
     mv_return = moving_average(return_list, 9)
@@ -187,5 +196,5 @@ if __name__ == '__main__':
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
-    plt.savefig('./picture/2.png')
+    plt.savefig(f'./picture/{env_name}_2.png')
     plt.show()

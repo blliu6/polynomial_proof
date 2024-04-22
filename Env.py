@@ -75,7 +75,7 @@ class Env:
         gamma, coff = self.compute_linear_programming()
 
         reward = gamma - self.last_gamma
-        reward = -0.1 if reward == 0 else reward
+        reward = -0.2 if reward == 0 else reward
         self.last_gamma = gamma
         done = True if gamma >= 0 else False
         reward = reward + 1 if done else reward
