@@ -20,6 +20,7 @@ gamma = 0.98
 epsilon = 0.95
 target_update = 50
 
+env_name = 'proof_4'
 objective = [1, -1, -1, -1, -1]
 n = 4
 deg = 1
@@ -29,7 +30,7 @@ action_dim = None
 max_episode = 1000
 env = Env(objective, n, deg, max_episode)
 
-agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, load=True)
+agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=True)
 
 episode_return = 0
 state, info = env.reset()
