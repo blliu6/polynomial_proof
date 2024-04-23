@@ -64,7 +64,7 @@ class DQN:
             print('Parameters loaded successfully!')
 
     def take_action(self, state, action):
-        if np.random.random() < self.epsilon:
+        if np.random.random() > self.epsilon:
             action = np.random.randint(len(action))
         else:
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
@@ -157,22 +157,22 @@ if __name__ == '__main__':
     np.random.seed(2024)
     torch.manual_seed(2024)
 
-    lr = 1e-3
+    lr = 1e-5
     num_episodes = 1000
     units = 128
-    gamma = 0.98
-    epsilon = 0.95
-    target_update = 50
-    buffer_size = 20000
+    gamma = 0.99
+    epsilon = 0.9
+    target_update = 20
+    buffer_size = 10000
     minimal_size = 1000
     batch_size = 1000
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    # device = torch.device('cpu')
+    # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    device = torch.device('cpu')
 
     objective = [1, -1, -1, -1, -1]
     n = 4
     deg = 1
-    max_episode = 1000
+    max_episode = 500
     env = Env(objective, n, deg, max_episode)
 
     env_name = 'proof_4'
