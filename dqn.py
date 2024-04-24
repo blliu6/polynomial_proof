@@ -148,7 +148,7 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
                                    'dones': b_d}
                 agent.update(transition_dict)
         return_list.append(episode_return)
-        print(f'Sum of reward: {episode_return}')
+        print(f'Sum of reward: {episode_return},agent_steps: {agent.steps}')
     print(f'Minimum number of proof steps:{agent.steps}, Minimum episode:{min_episode}')
     return return_list
 
