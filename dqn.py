@@ -166,8 +166,7 @@ if __name__ == '__main__':
     buffer_size = 10000
     minimal_size = 1000
     batch_size = 1000
-    # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    device = torch.device('cpu')
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     objective = [1, -1, -1, -1, -1]
     n = 4
