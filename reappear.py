@@ -17,17 +17,17 @@ lr = 1e-3
 num_episodes = 1000
 units = 128
 gamma = 0.98
-epsilon = 0.95
+epsilon = 1
 target_update = 50
 
-env_name = 'proof_4'
+env_name = 'proof_4_1'
 objective = [1, -1, -1, -1, -1]
 n = 4
 deg = 1
 state_dim = n + 1
 action_dim = None
 
-max_episode = 1000
+max_episode = 100
 env = Env(objective, n, deg, max_episode)
 
 agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=True)
@@ -41,3 +41,4 @@ while not done and not truncated:
     episode_return += reward
     print('state:', next_state, 'reward:', reward, 'done:', done)
     state = next_state
+print(f'episode_return:{episode_return}')
