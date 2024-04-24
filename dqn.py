@@ -49,8 +49,8 @@ class DQN:
         self.action_dim = action_dim
         self.q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
         self.target_q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
-        self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
-        # self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
+        # self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
+        self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
         self.gamma = gamma
         self.epsilon = epsilon
         self.target_update = target_update
@@ -120,6 +120,7 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
     return_list = []
     min_episode = 0
     for i_episode in range(num_episodes):
+        print(f'Iteration:{i_episode}')
         if i_episode % 10 == 0:
             agent.epsilon = min(agent.epsilon + 0.01, 1)
         episode_return = 0
@@ -158,9 +159,9 @@ if __name__ == '__main__':
     torch.manual_seed(2024)
 
     lr = 1e-5
-    num_episodes = 300
+    num_episodes = 200
     units = 128
-    gamma = 0.99
+    gamma = 0.98
     epsilon = 0.9
     target_update = 20
     buffer_size = 10000
@@ -171,7 +172,7 @@ if __name__ == '__main__':
     objective = [1, -1, -1, -1, -1]
     n = 4
     deg = 1
-    max_episode = 500
+    max_episode = 100
     env = Env(objective, n, deg, max_episode)
 
     env_name = 'proof_4'
