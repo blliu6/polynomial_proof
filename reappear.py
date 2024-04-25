@@ -13,12 +13,12 @@ np.random.seed(2024)
 torch.manual_seed(2024)
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-lr = 1e-3
-num_episodes = 1000
+lr = 1e-5
+num_episodes = 300
 units = 128
 gamma = 0.98
 epsilon = 1
-target_update = 50
+target_update = 20
 
 env_name = 'proof_4_1'
 objective = [1, -1, -1, -1, -1]
