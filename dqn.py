@@ -172,8 +172,8 @@ if __name__ == '__main__':
     objective = [1, -1, -1, -1, -1]
     n = 4
     deg = 1
-    max_episode = 100
-    env = Env(objective, n, deg, max_episode)
+    max_steps = 100
+    env = Env(objective, n, deg, max_steps)
 
     env_name = 'proof_4_1'
     replay_buffer = ReplayBuffer(buffer_size)
