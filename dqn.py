@@ -159,7 +159,7 @@ if __name__ == '__main__':
     torch.manual_seed(2024)
 
     lr = 1e-5
-    num_episodes = 200
+    num_episodes = 100
     units = 128
     gamma = 0.98
     epsilon = 0.9
