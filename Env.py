@@ -30,7 +30,6 @@ class Env:
         self.map = {}
 
     def reset(self):
-        self.map = {}
         self.episode = 0
         self.memory = []
         self.action = None
