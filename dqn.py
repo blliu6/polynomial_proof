@@ -120,8 +120,8 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
     return_list = []
     min_episode = 0
     for i_episode in range(num_episodes):
-        print(f'Iteration:{i_episode}')
-        if i_episode % 10 == 0:
+        print(f'Episode:{i_episode}')
+        if i_episode % 10 == 0 and agent.epsilon < 1:
             agent.epsilon = min(agent.epsilon + 0.01, 1)
         episode_return = 0
         state, info = env.reset()
