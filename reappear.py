@@ -20,7 +20,7 @@ gamma = 0.98
 epsilon = 1
 target_update = 20
 
-env_name = 'proof_4_2'
+env_name = 'proof_4'
 objective = [1, -1, -1, -1, -1]
 n = 4
 deg = 1
