@@ -47,8 +47,8 @@ class DQN:
     def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, name,
                  load=False):
         self.action_dim = action_dim
-        self.q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
-        self.target_q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
+        self.q_net = Qnet(state_dim * 3 + 1, dense=4, units=units).to(device)
+        self.target_q_net = Qnet(state_dim * 3 + 1, dense=4, units=units).to(device)
         # self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
         self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
         self.gamma = gamma
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     max_steps = 100
     env = Env(objective, n, deg, max_steps)
 
-    env_name = 'proof_4_1'
+    env_name = 'proof_4'
     replay_buffer = ReplayBuffer(buffer_size)
     state_dim = n + 1
     action_dim = None

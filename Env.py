@@ -75,7 +75,7 @@ class Env:
         gamma, coff = self.compute_linear_programming()
 
         reward = gamma - self.last_gamma
-        reward = -0.2 if reward == 0 else reward
+        reward = -0.1 if reward == 0 else reward
         self.last_gamma = gamma
         done = True if gamma >= 0 else False
         reward = reward + 1 if done else reward
@@ -105,7 +105,7 @@ class Env:
             # print('Lambda:', y.value)
             # print('Reward:', x.value)
             s = self.coefficient_matrix @ x.value
-            self.state = list(s.T[0])
+            self.state = list(s.T[0]) + [self.len_memory]
             # print('s:', s)
             print('state:', self.state)
             print('sum:', sum(self.sp_poly @ s))
@@ -117,6 +117,7 @@ class Env:
 
     def add_memory(self, memory):
         if sum(memory) != 0 and (not tuple(memory) in self.set_memory):
+            self.set_memory.add(tuple(memory))
             self.memory.append(memory)
             self.len_memory += 1
             self.coefficient_matrix = np.concatenate((self.coefficient_matrix, np.array([memory]).T), axis=1)
