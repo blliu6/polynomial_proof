@@ -1,4 +1,4 @@
-from monomials_generate import monomials
+from proof.monomials_generate import monomials
 
 
 def dfs(n: int, m: int):

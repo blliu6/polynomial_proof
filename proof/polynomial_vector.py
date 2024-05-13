@@ -1,4 +1,4 @@
-from monomials_generate import monomials_
+from proof.monomials_generate import monomials_
 
 
 class agent_state:

@@ -1,5 +1,5 @@
-from polynomial_mul import polynomial_mul, polynomial_mul_
-from monomials_generate import monomials
+from proof.polynomial_mul import polynomial_mul, polynomial_mul_
+from proof.monomials_generate import monomials
 import numpy as np
 import cvxpy as cp
 import sympy as sp
@@ -28,11 +28,12 @@ class Env:
         self.action = None
         self.action_ = None
         self.map = {}
+        self.tuple_memory = []
 
     def reset(self):
         self.episode = 0
         self.memory = []
-        self.action = None
+        self.action = []
         for i in range(self.n):
             tmp = [0] * self.len_vector
             tmp[i + 1] = 1
@@ -43,46 +44,51 @@ class Env:
         self.len_memory = len(self.memory)
 
         self.action_ = np.array(self.memory)
+
         for item in self.memory:
-            tmp = np.concatenate((np.array([item] * self.n * 2), self.action_), axis=1)
-            if self.action is None:
-                self.action = tmp
-            else:
-                self.action = np.concatenate((self.action, tmp), axis=0)
+            for i in range(self.n):
+                new_poly1 = polynomial_mul_(item, (0, i + 1), self.poly_list, self.dic)
+                new_poly2 = polynomial_mul_(item, (1, i + 1), self.poly_list, self.dic)
+                self.action.extend([new_poly1, new_poly2])
+        self.action = np.array(self.action)
 
         self.coefficient_matrix = np.array(self.memory).T
         self.set_memory = set([tuple(e) for e in self.memory])
-        self.last_gamma, _ = self.compute_linear_programming()
+        self.tuple_memory = [tuple(e) for e in self.memory]
+        self.last_gamma, state = self.compute_linear_programming()
 
-        self.map[tuple(self.state)] = self.action
+        self.state = (tuple(self.tuple_memory), state)
+        self.map[tuple(self.tuple_memory)] = self.action
         # print(self.coefficient_matrix)
         # print(self.memory)
-        return self.state, _
+        return self.state, None
 
     def step(self, action):
         self.episode += 1
         # action [0,2*n*|M|-1]
-        pos = action // (2 * self.n)
-        pos_x = action % (2 * self.n)
-        if pos_x % 2:
-            new_poly = polynomial_mul_(self.memory[pos], (1, pos_x // 2 + 1), self.poly_list, self.dic)
-        else:
-            new_poly = polynomial_mul_(self.memory[pos], (0, pos_x // 2 + 1), self.poly_list, self.dic)
+        # pos = action // (2 * self.n)
+        # pos_x = action % (2 * self.n)
+        # if pos_x % 2:
+        #     new_poly = polynomial_mul_(self.memory[pos], (1, pos_x // 2 + 1), self.poly_list, self.dic)
+        # else:
+        #     new_poly = polynomial_mul_(self.memory[pos], (0, pos_x // 2 + 1), self.poly_list, self.dic)
 
-        self.add_memory(new_poly)
+        self.add_memory(action)
         print(f'The iteration:{self.episode}')
         print(f'The action:{action}')
-        gamma, coff = self.compute_linear_programming()
+
+        gamma, state = self.compute_linear_programming()
+        self.state = (tuple(self.tuple_memory), state)
 
         reward = gamma - self.last_gamma
         reward = -0.2 if reward == 0 else reward
         self.last_gamma = gamma
         done = True if gamma >= 0 else False
         reward = reward + 1 if done else reward
-        truncated = True if self.episode > self.max_episode else False
+        truncated = True if self.episode >= self.max_episode else False
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory)
         # self.visualization(done, coff)
-        self.map[tuple(self.state)] = self.action
+        self.map[tuple(self.tuple_memory)] = self.action
         return self.state, reward, done, truncated, self.episode
 
     def compute_linear_programming(self):
@@ -105,24 +111,30 @@ class Env:
             # print('Lambda:', y.value)
             # print('Reward:', x.value)
             s = self.coefficient_matrix @ x.value
-            self.state = list(s.T[0])
+            state = list(s.T[0])
             # print('s:', s)
-            print('state:', self.state)
+            print('state:', state)
             print('sum:', sum(self.sp_poly @ s))
-            return y.value, x.value
+            return y.value, state
         else:
             return None, None
         # print(A)
         # print(b)
 
     def add_memory(self, memory):
+        memory = list(memory)
         if sum(memory) != 0 and (not tuple(memory) in self.set_memory):
             self.set_memory.add(tuple(memory))
+            self.tuple_memory.append(tuple(memory))
             self.memory.append(memory)
             self.len_memory += 1
             self.coefficient_matrix = np.concatenate((self.coefficient_matrix, np.array([memory]).T), axis=1)
-            self.action = np.concatenate(
-                (self.action, np.concatenate((np.array([memory] * self.n * 2), self.action_), axis=1)), axis=0)
+            tmp = []
+            for i in range(self.n):
+                new_poly1 = polynomial_mul_(memory, (0, i + 1), self.poly_list, self.dic)
+                new_poly2 = polynomial_mul_(memory, (1, i + 1), self.poly_list, self.dic)
+                tmp.extend([new_poly1, new_poly2])
+            self.action = np.concatenate((self.action, np.array(tmp)), axis=0)
         # print(self.coefficient_matrix)
 
 

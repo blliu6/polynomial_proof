@@ -1,31 +1,9 @@
-import sys
-
-sys.path.append('/home/blliu/pythonproject/polynomial_proof')
-
-import random
-import collections
+import timeit
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from Env import Env
-
-
-class ReplayBuffer:
-    def __init__(self, capacity):
-        self.buffer = collections.deque(maxlen=capacity)  # 队列,先进先出
-
-    def add(self, state, action, reward, next_state, done):  # 将数据加入buffer
-        self.buffer.append((state, action, reward, next_state, done))
-
-    def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
-        transitions = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = zip(*transitions)
-        return state, np.array(action), reward, next_state, done
-
-    def size(self):  # 目前buffer中数据的数量
-        return len(self.buffer)
+from proof.ReplayBuffer import ReplayBuffer
 
 
 class Qnet(nn.Module):
@@ -60,7 +38,7 @@ class DQN:
         self.name = name
 
         if load:
-            self.q_net.load_state_dict(torch.load(f'./model/{self.name}.pth'))
+            self.q_net.load_state_dict(torch.load(f'../model/{self.name}.pth'))
             print('Parameters loaded successfully!')
 
     def take_action(self, state, action):
@@ -85,7 +63,7 @@ class DQN:
 
         return torch.cat(res, 0)
 
-    def update(self, transition_dict):
+    def update(self, transition_dict, env):
         states_ = list(transition_dict['states'])
         next_states_ = transition_dict['next_states']
 
@@ -113,22 +91,14 @@ class DQN:
         self.count += 1
 
     def save(self):
-        torch.save(self.q_net.state_dict(), f'./model/{self.name}.pth')
+        torch.save(self.q_net.state_dict(), f'../model/{self.name}.pth')
         print('Model saved successfully!')
 
 
-def moving_average(a, window_size):
-    cumulative_sum = np.cumsum(np.insert(a, 0, 0))
-    middle = (cumulative_sum[window_size:] - cumulative_sum[:-window_size]) / window_size
-    r = np.arange(1, window_size - 1, 2)
-    begin = np.cumsum(a[:window_size - 1])[::2] / r
-    end = (np.cumsum(a[:-window_size:-1])[::2] / r)[::-1]
-    return np.concatenate((begin, middle, end))
-
-
-def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size):
+def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size, epsilon_step=0.01):
     return_list = []
-    min_episode = 0
+    min_episode, end = 0, 0
+    replay_buffer = ReplayBuffer(buffer_size)
     for i_episode in range(num_episodes):
         print(f'Episode:{i_episode}')
         if i_episode % 10 == 0 and agent.epsilon < 1:
@@ -141,7 +111,7 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
             next_state, reward, done, truncated, info = env.step(action)
 
             if done and agent.steps > info and agent.epsilon == 1:
-                agent.steps, min_episode = info, i_episode
+                agent.steps, min_episode, end = info, i_episode, timeit.default_timer()
                 agent.save()
 
             if reward > 0:
@@ -155,55 +125,12 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
                 b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
                 transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r,
                                    'dones': b_d}
-                agent.update(transition_dict)
+                agent.update(transition_dict, env)
         return_list.append(episode_return)
         print(f'Sum of reward: {episode_return},agent_steps: {agent.steps}')
     print(f'Minimum number of proof steps:{agent.steps}, Minimum episode:{min_episode}')
-    return return_list
+    return return_list, end
 
 
 if __name__ == '__main__':
-    random.seed(2024)
-    np.random.seed(2024)
-    torch.manual_seed(2024)
-
-    lr = 1e-5
-    num_episodes = 100
-    units = 128
-    gamma = 0.98
-    epsilon = 0.9
-    target_update = 20
-    buffer_size = 10000
-    minimal_size = 1000
-    batch_size = 1000
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-    objective = [4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-    n = 10
-    deg = 1
-    max_steps = 500
-    env = Env(objective, n, deg, max_steps)
-
-    env_name = 'proof_10'
-    replay_buffer = ReplayBuffer(buffer_size)
-    state_dim = n + 1
-    action_dim = None
-    agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name)
-
-    return_list = train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
-
-    episodes_list = list(range(len(return_list)))
-    plt.plot(episodes_list, return_list)
-    plt.xlabel('Episodes')
-    plt.ylabel('Returns')
-    plt.title('DQN on {}'.format(env_name))
-    plt.savefig(f'./picture/{env_name}_1.png')
-    plt.show()
-
-    mv_return = moving_average(return_list, 9)
-    plt.plot(episodes_list, mv_return)
-    plt.xlabel('Episodes')
-    plt.ylabel('Returns')
-    plt.title('DQN on {}'.format(env_name))
-    plt.savefig(f'./picture/{env_name}_2.png')
-    plt.show()
+    pass
