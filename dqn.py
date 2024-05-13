@@ -22,7 +22,7 @@ class ReplayBuffer:
     def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
         transitions = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = zip(*transitions)
-        return np.array(state), np.array(action), reward, next_state, done
+        return state, np.array(action), reward, next_state, done
 
     def size(self):  # 目前buffer中数据的数量
         return len(self.buffer)
@@ -47,8 +47,8 @@ class DQN:
     def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, name,
                  load=False):
         self.action_dim = action_dim
-        self.q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
-        self.target_q_net = Qnet(state_dim * 3, dense=4, units=units).to(device)
+        self.q_net = Qnet(state_dim * 2, dense=4, units=units).to(device)
+        self.target_q_net = Qnet(state_dim * 2, dense=4, units=units).to(device)
         # self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
         self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
         self.gamma = gamma
@@ -64,34 +64,44 @@ class DQN:
             print('Parameters loaded successfully!')
 
     def take_action(self, state, action):
+        state = state[1]
         if np.random.random() > self.epsilon:
-            action = np.random.randint(len(action))
+            pos = np.random.randint(len(action))
         else:
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
             state = torch.tensor(input, dtype=torch.float).to(self.device)
-            action = self.q_net(state).argmax().item()
-        return action
+            pos = self.q_net(state).argmax().item()
+        return action[pos]
 
-    def get_next_q(self, next_state, action_map):
-        res = torch.empty((len(next_state), 1)).to(self.device)
+    def get_next_q(self, next_states_original, next_state, action_map):
+        res = []
+        # res = torch.empty((len(next_state), 1)).to(self.device)
         for i, state in enumerate(next_state):
-            action = action_map[tuple(state)]
+            action = action_map[next_states_original[i]]
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
             state = torch.tensor(input, dtype=torch.float).to(self.device)
-            res[i] = self.q_net(state).max()
-        return res
+            # res[i] = self.target_q_net(state).max()
+            res.append(self.target_q_net(state).max().reshape(-1, 1))
+
+        return torch.cat(res, 0)
 
     def update(self, transition_dict):
-        states = torch.tensor(transition_dict['states'], dtype=torch.float).to(self.device)
-        actions = torch.tensor(transition_dict['actions']).to(self.device)
+        states_ = list(transition_dict['states'])
+        next_states_ = transition_dict['next_states']
+
+        states_original, states = [item[0] for item in states_], [item[1] for item in states_]
+        next_states_original, next_states = [item[0] for item in next_states_], [item[1] for item in next_states_]
+
+        states = torch.tensor(states, dtype=torch.float).to(self.device)
+        actions = torch.tensor(transition_dict['actions'], dtype=torch.float).to(self.device)
         rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1).to(self.device)
-        next_states = transition_dict['next_states']
+        # next_states = torch.tensor(next_states, dtype=torch.float).to(self.device)
         dones = torch.tensor(transition_dict['dones'], dtype=torch.float).view(-1, 1).to(self.device)
 
         input = torch.cat((states, actions), dim=1)
         q_values = self.q_net(input)
 
-        max_next_q_values = self.get_next_q(next_states, env.map)
+        max_next_q_values = self.get_next_q(next_states_original, next_states, env.map)
 
         q_targets = rewards + self.gamma * max_next_q_values * (1 - dones)  # TD误差目标
         dqn_loss = torch.mean(F.mse_loss(q_values, q_targets))  # 均方误差损失函数
@@ -129,7 +139,6 @@ def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size
         while not done and not truncated:
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
-            action = env.action[action]
 
             if done and agent.steps > info and agent.epsilon == 1:
                 agent.steps, min_episode = info, i_episode
@@ -169,13 +178,13 @@ if __name__ == '__main__':
     batch_size = 1000
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    objective = [1, -1, -1, -1, -1]
-    n = 4
+    objective = [4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+    n = 10
     deg = 1
-    max_steps = 100
+    max_steps = 500
     env = Env(objective, n, deg, max_steps)
 
-    env_name = 'proof_4_1'
+    env_name = 'proof_10'
     replay_buffer = ReplayBuffer(buffer_size)
     state_dim = n + 1
     action_dim = None

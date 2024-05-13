@@ -20,7 +20,7 @@ gamma = 0.98
 epsilon = 1
 target_update = 20
 
-env_name = 'proof_4_1'
+env_name = 'proof_4'
 objective = [1, -1, -1, -1, -1]
 n = 4
 deg = 1
@@ -39,6 +39,6 @@ while not done and not truncated:
     action = agent.take_action(state, env.action)
     next_state, reward, done, truncated, info = env.step(action)
     episode_return += reward
-    print('state:', next_state, 'reward:', reward, 'done:', done)
+    # print('state:', next_state, 'reward:', reward, 'done:', done)
     state = next_state
 print(f'episode_return:{episode_return}')
