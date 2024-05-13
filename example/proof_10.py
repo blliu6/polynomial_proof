@@ -17,7 +17,8 @@ def main():
     load = False
     begin = timeit.default_timer()
     opts = {
-
+        'epsilon_step': 0.025,
+        'num_episodes': 60
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device = config.get_config()
