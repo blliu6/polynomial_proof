@@ -17,11 +17,12 @@ def main():
     load = False
     begin = timeit.default_timer()
     opts = {
-        'epsilon_step': 0.025,
-        'num_episodes': 60
+        'epsilon_step': 0.01,
+        'num_episodes': 100,
+        'multiple_rewards': 20
     }
     config = ProofConfig(**opts)
-    lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device = config.get_config()
+    lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
 
     objective = [1, -1, -1, -1, -1, -1, -1, -1]
     n = 7
@@ -37,7 +38,7 @@ def main():
 
     if not load:
         return_list, end = train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size,
-                                                  epsilon_step)
+                                                  epsilon_step, multiple_rewards)
         print(f'Total time: {end - begin}s')
         plot(return_list, env_name)
     else:

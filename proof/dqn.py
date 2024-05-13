@@ -95,7 +95,8 @@ class DQN:
         print('Model saved successfully!')
 
 
-def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size, epsilon_step=0.01):
+def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size, epsilon_step=0.01,
+                           multiple_rewards=10):
     return_list = []
     min_episode, end = 0, 0
     replay_buffer = ReplayBuffer(buffer_size)
@@ -115,7 +116,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
                 agent.save()
 
             if reward > 0:
-                for i in range(9):
+                for i in range(multiple_rewards - 1):
                     replay_buffer.add(state, action, reward, next_state, done)
 
             replay_buffer.add(state, action, reward, next_state, done)
