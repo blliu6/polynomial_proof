@@ -17,7 +17,7 @@ def plot(return_list: list, env_name):
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
-    plt.savefig(f'./picture/{env_name}_1.png')
+    plt.savefig(f'../picture/{env_name}_1.png')
     plt.show()
 
     mv_return = moving_average(return_list, 9)
@@ -25,5 +25,5 @@ def plot(return_list: list, env_name):
     plt.xlabel('Episodes')
     plt.ylabel('Returns')
     plt.title('DQN on {}'.format(env_name))
-    plt.savefig(f'./picture/{env_name}_2.png')
+    plt.savefig(f'../picture/{env_name}_2.png')
     plt.show()

@@ -102,7 +102,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
     for i_episode in range(num_episodes):
         print(f'Episode:{i_episode}')
         if i_episode % 10 == 0 and agent.epsilon < 1:
-            agent.epsilon = min(agent.epsilon + 0.01, 1)
+            agent.epsilon = min(agent.epsilon + epsilon_step, 1)
         episode_return = 0
         state, info = env.reset()
         done, truncated = False, False
