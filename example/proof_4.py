@@ -21,7 +21,7 @@ def main():
         'num_episodes': 50
     }
     config = ProofConfig(**opts)
-    lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device = config.get_config()
+    lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
 
     objective = [1, -1, -1, -1, -1]
     n = 4
