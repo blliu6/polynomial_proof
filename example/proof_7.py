@@ -30,7 +30,7 @@ def main():
     max_steps = 1000
     env = Env(objective, n, deg, max_steps)
 
-    env_name = 'proof_10'
+    env_name = 'proof_7'
     state_dim = n + 1
     action_dim = None
 
