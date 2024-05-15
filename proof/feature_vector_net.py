@@ -15,19 +15,20 @@ class FeatureVectorNet(nn.Module):
             s = hidden_size
         self.seq.add_module(f'dense_{dense}', nn.Linear(s, output_size))
 
-    def forward(self, x):
+    def forward(self, x, prefix):
         # torch.max(self.seq(x), dim=0)[0]
-        return self.seq(x).max(axis=1)[0]
+        # 将数据预处理，形成一个N * input_size的矩阵
+        res = []
+        x = self.seq(x)
+        for i in range(len(prefix) - 1):
+            l, r = prefix[i], prefix[i + 1]
+            print(x[l:r, :].max(0)[0])
+            res.append(x[l:r, :].max(0)[0].reshape(1, -1))
+        return torch.cat(res, 0)
 
 
 if __name__ == '__main__':
-    # torch.manual_seed(2024)
-    # net = FeatureVectorNet(6)
-    # x1 = torch.randn(10, 6)
-    # x2 = torch.randn(20, 6)
-    # x3 = torch.randn(30, 6)
-    # x = torch.tensor([x1, x2, x3])
-    # print(x)
-    # print(net(x).size())
-    # print(net(x))
-    pass
+    x = torch.randn(10, 6)
+    pre = [0, 4, 6, 8, 10]
+    net = FeatureVectorNet(6, hidden_size=5, output_size=5)
+    print(net(x, pre))
