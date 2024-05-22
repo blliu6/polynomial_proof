@@ -225,7 +225,7 @@ class Env:
 if __name__ == '__main__':
     from proof.Example import get_examples_by_name
 
-    ex = get_examples_by_name('case_8')
+    ex = get_examples_by_name('case_14')
     env = Env(ex, 100)
     env.reset()
     # env.memory_initialization()
