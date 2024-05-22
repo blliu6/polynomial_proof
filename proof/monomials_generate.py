@@ -57,6 +57,12 @@ def monomials_(variable_number, degree):
 
 
 if __name__ == '__main__':
+    import timeit
+
+    t1 = timeit.default_timer()
     pol1 = monomials_(5, 3)
+    t2 = timeit.default_timer()
     pol2 = monomials(5, 3)
+    t3 = timeit.default_timer()
     print(pol1 == pol2)
+    print(t2 - t1, t3 - t2)

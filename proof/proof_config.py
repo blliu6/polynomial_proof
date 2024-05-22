@@ -2,6 +2,7 @@ import torch
 
 
 class ProofConfig:
+    example = None
     lr = 1e-5
     num_episodes = 100
     units = 128
