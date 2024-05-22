@@ -41,10 +41,9 @@ class Env:
         self.len_memory = 0
         self.coefficient_matrix = None
         self.set_memory = None
-        self.last_gamma = None
+        self.last_gamma, self.last_len = None, None
         self.state = None
         self.action = None
-        # self.action_ = None
         self.map = {}
         self.tuple_memory = []
 
@@ -52,6 +51,7 @@ class Env:
         self.episode = 0
         self.memory, self.action = self.M, self.A
         self.len_memory = len(self.memory)
+        self.last_len = self.len_memory
 
         self.coefficient_matrix = np.array(self.memory).T
         self.set_memory = set([tuple(e) for e in self.memory])
@@ -76,16 +76,27 @@ class Env:
         gamma, state = self.compute_linear_programming()
         self.state = (tuple(self.tuple_memory), state)
 
-        reward = gamma - self.last_gamma
-        reward = -0.2 if reward == 0 else reward
-        self.last_gamma = gamma
+        reward = self.get_reward(gamma)
+
         done = True if gamma >= 0 else False
-        reward = reward + 1 if done else reward
+        reward = reward + 10 if done else reward
+
         truncated = True if self.episode >= self.max_episode else False
+
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory)
-        # self.visualization(done, coff)
         self.map[tuple(self.tuple_memory)] = self.action
+
         return self.state, reward, done, truncated, self.episode
+
+    def get_reward(self, gamma):
+        reward = -0.05
+        if self.len_memory > self.last_len:
+            self.last_len = self.len_memory
+            reward += 0.15
+        if gamma > self.last_gamma:
+            self.last_gamma = gamma
+            reward += 1
+        return reward
 
     def compute_linear_programming(self):
         x = cp.Variable((self.len_memory, 1))
@@ -152,7 +163,6 @@ class Env:
         # for item in poly:
         #     print(sum(item))
         poly = poly[1:]
-        t5 = timeit.default_timer()
         pool = Pool(processes=mp.cpu_count() // 3)
         res = pool.map(self.compute_memory, poly)
         pool.close()
@@ -165,9 +175,6 @@ class Env:
         #                 tmp = mul_polynomial_with_fft(tmp, M_[i], self.dic_forward, self.dic_reverse, self.len_vector,
         #                                               self.max_map)
         #     M.append(tmp)
-        t6 = timeit.default_timer()
-        print(t6 - t5)
-        print((t6 - t5) / len(poly))
 
         for x, y in zip(res, poly):
             self.M_deg_map[tuple(x)] = sum(y)
@@ -178,6 +185,7 @@ class Env:
                 break
 
         self.M = res
+        print(len(self.M))
 
         self.memory_action = self.M[self.first_deg_pos:]
         action = []
@@ -215,9 +223,9 @@ class Env:
 
 
 if __name__ == '__main__':
-    from proof.Example import get_example
+    from proof.Example import get_examples_by_name
 
-    ex = get_example(1)
+    ex = get_examples_by_name('case_2')
     env = Env(ex, 100)
     env.reset()
     # env.memory_initialization()

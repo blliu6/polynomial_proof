@@ -15,15 +15,15 @@ from proof.Example import get_examples_by_name
 
 
 def main():
-    env_name = 'case_1'
+    env_name = 'case_2'
     example = get_examples_by_name(env_name)
     load = False
     begin = timeit.default_timer()
     opts = {
         'example': example,
-        'epsilon_step': 0.02,
+        'epsilon_step': 0.01,
         'num_episodes': 250,
-        'epsilon': 0.6,
+        'epsilon': 0.8,
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
