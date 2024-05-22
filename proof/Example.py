@@ -39,6 +39,50 @@ examples = {
         objective=convert('x1-2*x2+x3+0.835634534*x2*(1-x2)+36.71269068', [[-5, 5]] * 3),
         l=3,
         name='case_2'
+    ),
+    3: Example(
+        n=4,
+        obj_deg=3,
+        objective=convert('x1*x2**2+x1*x3**2+x1*x4**2-1.1*x1+1+20.8', [[-2, 2]] * 4),
+        l=4,
+        name='case_3'
+    ),
+    4: Example(
+        n=4,
+        obj_deg=6,
+        objective=convert(
+            '-x1*x3**3+4*x2*x3**2*x4+4*x1*x3*x4**2+2*x2*x4**3+4*x1*x3+4*x3**2-10*x2*x4-10*x4**2+2+3.1800966258',
+            [[-5, 5]] * 4),
+        l=6,
+        name='case_4'
+    ),
+    5: Example(
+        n=5,
+        obj_deg=5,
+        objective=convert('x5**2+x1+x2+x3+x4-x5-10+30.25', [[-5, 5]] * 5),
+        l=5,
+        name='case_5'
+    ),
+    6: Example(
+        n=5,
+        obj_deg=6,
+        objective=convert('-1+2*x1**6-2*x2**6+2*x3**6-2*x4**6+2*x5**6', [[-1, 1]] * 5),
+        l=6,
+        name='case_6'
+    ),
+    8: Example(
+        n=5,
+        obj_deg=5,
+        objective=convert('x1*x2*x3*x4+x1*x2*x3*x5+x1*x2*x4*x5+x1*x3*x4*x5+x2*x3*x4*x5+30000', [[-10, 10]] * 5),
+        l=5,
+        name='case_8'
+    ),
+    9: Example(
+        n=6,
+        obj_deg=4,
+        objective=convert('2*x1**2+2*x2**2+2*x3**2+2*x4**2+2*x5**2+x6**2-x6+0.25', [[-5, 5]] * 6),
+        l=4,
+        name='case_9'
     )
 }
 

@@ -24,6 +24,7 @@ def main():
         'epsilon_step': 0.02,
         'num_episodes': 250,
         'epsilon': 0.6,
+        'multiple_rewards': 100
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
