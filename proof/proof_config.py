@@ -13,7 +13,7 @@ class ProofConfig:
     buffer_size = 10000
     minimal_size = 1000
     batch_size = 1000
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cuda')
+    device = torch.device('cuda:1') if torch.cuda.is_available() else torch.device('cpu')
     multiple_rewards = 10
 
     def __init__(self, **kwargs):
