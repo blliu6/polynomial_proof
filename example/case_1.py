@@ -32,7 +32,6 @@ def main():
     max_steps = 300
     env = Env(example, max_steps)
 
-    env_name = 'case_1'
     state_dim = env.len_vector
     action_dim = None
 

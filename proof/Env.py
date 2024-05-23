@@ -40,7 +40,7 @@ class Env:
         self.memory, self.memory_action = None, None
         self.len_memory = 0
         self.coefficient_matrix = None
-        self.set_memory = None
+        self.set_memory, self.set_action = None, None
         self.last_gamma, self.last_len = None, None
         self.state = None
         self.action = None
@@ -59,6 +59,7 @@ class Env:
         self.last_gamma, state = self.compute_linear_programming()
 
         print('reward:', self.last_gamma)
+        print('self.action', len(self.action))
 
         self.state = (tuple(self.tuple_memory), state)
         self.map[tuple(self.tuple_memory)] = self.action
@@ -72,9 +73,13 @@ class Env:
         self.add_memory(action)
         print(f'The iteration:{self.episode}')
         # print(f'The action:{action}')
-
-        gamma, state = self.compute_linear_programming()
-        self.state = (tuple(self.tuple_memory), state)
+        if self.len_memory > self.last_len:
+            gamma, state = self.compute_linear_programming()
+            self.state = (tuple(self.tuple_memory), state)
+            self.map[tuple(self.tuple_memory)] = self.action
+        else:
+            gamma = self.last_gamma
+        # self.state = (tuple(self.tuple_memory), state)
 
         reward = self.get_reward(gamma)
 
@@ -84,7 +89,6 @@ class Env:
         truncated = True if self.episode >= self.max_episode else False
 
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory)
-        self.map[tuple(self.tuple_memory)] = self.action
 
         return self.state, reward, done, truncated, self.episode
 
@@ -141,9 +145,12 @@ class Env:
                 for mul in self.M_:
                     new_poly = mul_polynomial_with_fft(memory, mul, self.dic_forward, self.dic_reverse, self.len_vector,
                                                        self.max_map)
-                    tmp.append(new_poly)
-                    self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(memory)] + 1
-                self.action = np.concatenate((self.action, np.array(tmp)), axis=0)
+                    if not tuple(new_poly) in self.set_action:
+                        self.set_action.add(tuple(new_poly))
+                        tmp.append(new_poly)
+                        self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(memory)] + 1
+                if len(tmp) > 0:
+                    self.action = np.concatenate((self.action, np.array(tmp)), axis=0)
         # print(self.coefficient_matrix)
 
     def memory_initialization(self):
@@ -185,18 +192,22 @@ class Env:
                 break
 
         self.M = res
-        print(len(self.M))
+        # print(len(self.M), self.first_deg_pos)
 
         self.memory_action = self.M[self.first_deg_pos:]
         action = []
+        self.set_action = set()
         for item in self.memory_action:
             if self.M_deg_map[tuple(item)] < self.l:
                 for mul in self.M_:
                     new_poly = mul_polynomial_with_fft(item, mul, self.dic_forward, self.dic_reverse, self.len_vector,
                                                        self.max_map)
-                    action.append(new_poly)
-                    self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
+                    if not tuple(new_poly) in self.set_action:
+                        self.set_action.add(tuple(new_poly))
+                        action.append(new_poly)
+                        self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
         self.A = np.array(action)
+        # print(len(action))
         # for item in res:
         #     s = 0
         #     for x, y in zip(item, self.sp_poly):
@@ -225,7 +236,7 @@ class Env:
 if __name__ == '__main__':
     from proof.Example import get_examples_by_name
 
-    ex = get_examples_by_name('case_14')
+    ex = get_examples_by_name('case_2')
     env = Env(ex, 100)
     env.reset()
     # env.memory_initialization()
