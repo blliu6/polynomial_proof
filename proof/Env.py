@@ -32,7 +32,6 @@ class Env:
         self.M, self.M_, self.A = None, None, None
         self.M_deg_map = {}
         self.first_deg_pos = -1
-        self.memory_initialization()
 
         self.max_episode = max_episode
         self.episode = 0
@@ -43,9 +42,10 @@ class Env:
         self.set_memory, self.set_action = None, None
         self.last_gamma, self.last_len = None, None
         self.state = None
-        self.action = None
         self.map = {}
         self.tuple_memory = []
+        self.action = None
+        self.memory_initialization()
 
     def reset(self):
         self.episode = 0
@@ -60,7 +60,7 @@ class Env:
 
         print('reward:', self.last_gamma)
         print('self.action', len(self.action))
-
+        state.append(self.len_memory - len(self.M))
         self.state = (tuple(self.tuple_memory), state)
         self.map[tuple(self.tuple_memory)] = self.action
         # print(self.coefficient_matrix)
@@ -75,11 +75,11 @@ class Env:
         # print(f'The action:{action}')
         if self.len_memory > self.last_len:
             gamma, state = self.compute_linear_programming()
+            state.append(self.len_memory - len(self.M))
             self.state = (tuple(self.tuple_memory), state)
             self.map[tuple(self.tuple_memory)] = self.action
         else:
             gamma = self.last_gamma
-        # self.state = (tuple(self.tuple_memory), state)
 
         reward = self.get_reward(gamma)
 
@@ -122,6 +122,14 @@ class Env:
             # print('Lambda:', y.value)
             # print('Reward:', x.value)
             s = self.coefficient_matrix @ x.value
+            # print(x.value.T)
+            # for i, item in enumerate(x.value.T[0]):
+            #     if abs(item) > 1e-10:
+            #         print(item, i)
+            #         ss = 0
+            #         for j, k in zip(self.M[i], self.sp_poly):
+            #             ss += j * k
+            #         print(ss)
             state = list(s.T[0])
             # print('s:', s)
             # print('state:', state)
@@ -155,7 +163,7 @@ class Env:
 
     def memory_initialization(self):
         max_obj_deg = self.deg
-        M_, M = [], []
+        M_ = []
         _, poly = monomials(self.n * 2, max_obj_deg)
 
         for i in range(self.n):
@@ -207,6 +215,9 @@ class Env:
                         action.append(new_poly)
                         self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
         self.A = np.array(action)
+
+        print('self.M', len(res))
+        print('self.A', len(self.A))
         # print(len(action))
         # for item in res:
         #     s = 0
@@ -236,7 +247,7 @@ class Env:
 if __name__ == '__main__':
     from proof.Example import get_examples_by_name
 
-    ex = get_examples_by_name('case_2')
+    ex = get_examples_by_name('case_3')
     env = Env(ex, 100)
     env.reset()
     # env.memory_initialization()

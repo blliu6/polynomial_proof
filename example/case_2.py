@@ -32,7 +32,7 @@ def main():
     env = Env(example, max_steps)
 
     state_dim = env.len_vector
-    action_dim = None
+    action_dim = env.len_vector
 
     agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=load)
 

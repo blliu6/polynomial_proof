@@ -25,8 +25,8 @@ class DQN:
     def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, name,
                  load=False):
         self.action_dim = action_dim
-        self.q_net = Qnet(state_dim * 2, dense=4, units=units).to(device)
-        self.target_q_net = Qnet(state_dim * 2, dense=4, units=units).to(device)
+        self.q_net = Qnet(state_dim + action_dim, dense=4, units=units).to(device)
+        self.target_q_net = Qnet(state_dim + action_dim, dense=4, units=units).to(device)
         # self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
         self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
         self.gamma = gamma
