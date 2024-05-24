@@ -101,11 +101,11 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
     min_episode, end = 0, 0
     replay_buffer = ReplayBuffer(buffer_size)
     for i_episode in range(num_episodes):
-        print(f'Episode:{i_episode}')
         if i_episode % 10 == 0 and agent.epsilon < 1:
             agent.epsilon = min(agent.epsilon + epsilon_step, 1)
         episode_return = 0
         state, info = env.reset()
+        print(f'Episode:{i_episode},len_memory:{env.len_memory},len_action:{len(env.action)}')
         done, truncated = False, False
         while not done and not truncated:
             action = agent.take_action(state, env.action)
@@ -113,6 +113,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
 
             if done and agent.steps > info and agent.epsilon == 1:
                 agent.steps, min_episode, end = info, i_episode, timeit.default_timer()
+                print(f'Proof steps:{agent.steps}, episode:{min_episode}')
                 agent.save()
 
             if reward > 0:

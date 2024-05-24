@@ -55,11 +55,11 @@ class Env:
 
         self.coefficient_matrix = np.array(self.memory).T
         self.set_memory = set([tuple(e) for e in self.memory])
+        self.set_action = set([tuple(e) for e in self.action])
         self.tuple_memory = [tuple(e) for e in self.memory]
         self.last_gamma, state = self.compute_linear_programming()
 
-        print('reward:', self.last_gamma)
-        print('self.action', len(self.action))
+        # print('reward:', self.last_gamma)
         state.append(self.len_memory - len(self.M))
         self.state = (tuple(self.tuple_memory), state)
         self.map[tuple(self.tuple_memory)] = self.action
@@ -88,7 +88,7 @@ class Env:
 
         truncated = True if self.episode >= self.max_episode else False
 
-        print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory)
+        print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory, 'len_action:', len(self.action))
 
         return self.state, reward, done, truncated, self.episode
 
@@ -142,7 +142,7 @@ class Env:
 
     def add_memory(self, memory):
         memory = list(memory)
-        if sum(memory) != 0 and (tuple(memory) not in self.set_memory):
+        if tuple(memory) not in self.set_memory:
             self.set_memory.add(tuple(memory))
             self.tuple_memory.append(tuple(memory))
             self.memory.append(memory)
