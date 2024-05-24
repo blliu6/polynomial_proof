@@ -49,7 +49,7 @@ class Env:
 
     def reset(self):
         self.episode = 0
-        self.memory, self.action = self.M, self.A
+        self.memory, self.action = self.M.copy(), self.A.copy()
         self.len_memory = len(self.memory)
         self.last_len = self.len_memory
 
@@ -142,7 +142,7 @@ class Env:
 
     def add_memory(self, memory):
         memory = list(memory)
-        if sum(memory) != 0 and (not tuple(memory) in self.set_memory):
+        if sum(memory) != 0 and (tuple(memory) not in self.set_memory):
             self.set_memory.add(tuple(memory))
             self.tuple_memory.append(tuple(memory))
             self.memory.append(memory)
@@ -153,7 +153,7 @@ class Env:
                 for mul in self.M_:
                     new_poly = mul_polynomial_with_fft(memory, mul, self.dic_forward, self.dic_reverse, self.len_vector,
                                                        self.max_map)
-                    if not tuple(new_poly) in self.set_action:
+                    if tuple(new_poly) not in self.set_action:
                         self.set_action.add(tuple(new_poly))
                         tmp.append(new_poly)
                         self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(memory)] + 1
@@ -210,7 +210,7 @@ class Env:
                 for mul in self.M_:
                     new_poly = mul_polynomial_with_fft(item, mul, self.dic_forward, self.dic_reverse, self.len_vector,
                                                        self.max_map)
-                    if not tuple(new_poly) in self.set_action:
+                    if tuple(new_poly) not in self.set_action:
                         self.set_action.add(tuple(new_poly))
                         action.append(new_poly)
                         self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
