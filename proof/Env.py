@@ -45,6 +45,7 @@ class Env:
         self.map = {}
         self.tuple_memory = []
         self.action = None
+        self.origin_state = None
         self.memory_initialization()
 
     def reset(self):
@@ -57,10 +58,11 @@ class Env:
         self.set_memory = set([tuple(e) for e in self.memory])
         self.set_action = set([tuple(e) for e in self.action])
         self.tuple_memory = [tuple(e) for e in self.memory]
-        self.last_gamma, state = self.compute_linear_programming()
+        self.last_gamma, _ = self.compute_linear_programming()
 
         # print('reward:', self.last_gamma)
-        state.append(self.len_memory - len(self.M))
+        # state.append(self.len_memory - len(self.M))
+        state = self.origin_state.copy()
         self.state = (tuple(self.tuple_memory), state)
         self.map[tuple(self.tuple_memory)] = self.action
         # print(self.coefficient_matrix)
@@ -74,8 +76,9 @@ class Env:
         print(f'The iteration:{self.episode}')
         # print(f'The action:{action}')
         if self.len_memory > self.last_len:
-            gamma, state = self.compute_linear_programming()
-            state.append(self.len_memory - len(self.M))
+            gamma, _ = self.compute_linear_programming()
+            # state.append(self.len_memory - len(self.M))
+            state = self.get_state(self.state[1], action)
             self.state = (tuple(self.tuple_memory), state)
             self.map[tuple(self.tuple_memory)] = self.action
         else:
@@ -200,6 +203,7 @@ class Env:
                 break
 
         self.M = res
+        self.origin_state = list(np.sum(np.array(res), axis=0))
         # print(len(self.M), self.first_deg_pos)
 
         self.memory_action = self.M[self.first_deg_pos:]
@@ -241,6 +245,10 @@ class Env:
         res = [0] * self.len_vector
         for key, value in item.items():
             res[dic[key]] += value
+        return res
+
+    def get_state(self, a, b):
+        res = [(x + y) for x, y in zip(a, b)]
         return res
 
 

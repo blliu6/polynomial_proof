@@ -116,7 +116,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
                 print(f'Proof steps:{agent.steps}, episode:{min_episode}')
                 agent.save()
 
-            if reward > 0:
+            if reward > 0.01:
                 for i in range(multiple_rewards - 1):
                     replay_buffer.add(state, action, reward, next_state, done)
 

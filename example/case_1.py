@@ -35,7 +35,7 @@ def main():
     state_dim = env.len_vector
     action_dim = env.len_vector
 
-    agent = DQN(state_dim + 1, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=load)
+    agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=load)
 
     if not load:
         return_list, end = train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size,
