@@ -22,14 +22,14 @@ def main():
     opts = {
         'example': example,
         'epsilon_step': 0.02,
-        'num_episodes': 250,
+        'num_episodes': 50,
         'epsilon': 0.6,
         'multiple_rewards': 10
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
 
-    max_steps = 1000
+    max_steps = 500
     env = Env(example, max_steps)
 
     state_dim = env.len_vector

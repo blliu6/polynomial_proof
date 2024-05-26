@@ -22,20 +22,20 @@ def main():
     opts = {
         'example': example,
         'epsilon_step': 0.02,
-        'num_episodes': 250,
+        'num_episodes': 50,
         'epsilon': 0.6,
         'multiple_rewards': 10
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()
 
-    max_steps = 1000
+    max_steps = 500
     env = Env(example, max_steps)
 
     state_dim = env.len_vector
     action_dim = env.len_vector
 
-    agent = DQN(state_dim + 1, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=load)
+    agent = DQN(state_dim, units, action_dim, lr, gamma, epsilon, target_update, device, env_name, load=load)
 
     if not load:
         return_list, end = train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, batch_size,
