@@ -111,7 +111,8 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
 
-            if done and agent.steps > info and agent.epsilon == 1:
+            # if done and agent.steps > info and agent.epsilon == 1:
+            if done and agent.steps > info:
                 agent.steps, min_episode, end = info, i_episode, timeit.default_timer()
                 print(f'Proof steps:{agent.steps}, episode:{min_episode}')
                 agent.save()
