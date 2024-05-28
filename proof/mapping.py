@@ -44,7 +44,7 @@ def get_fft_pol(item, dic, max_pos):
 def get_poly_fft(item, p, dic):
     res = [0] * p
     for i, e in enumerate(item):
-        if abs(e) > 1e-10:
+        if abs(e) > 1e-10 and (i in dic):
             res[dic[i]] += e
     return res
 

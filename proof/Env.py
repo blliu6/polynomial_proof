@@ -25,6 +25,10 @@ class Env:
         self.dic_forward = dict(zip(range(self.len_vector), self.poly_map))
         self.dic_reverse = dict(zip(self.poly_map, range(self.len_vector)))
         self.max_map = max(self.poly_map)
+
+        # print(self.max_map, len(self.poly_list))
+        # import os
+        # os.system('pause')
         ###
         # self.dic = {}
         # for i, e in enumerate(self.poly_list):
@@ -39,7 +43,7 @@ class Env:
         self.memory, self.memory_action = None, None
         self.len_memory = 0
         self.coefficient_matrix = None
-        self.set_memory, self.set_action = None, None
+        self.set_memory, self.set_action, self.set_M = None, None, None
         self.last_gamma, self.last_len = None, None
         self.state = None
         self.map = {}
@@ -84,10 +88,12 @@ class Env:
         else:
             gamma = self.last_gamma
 
+        done = True if gamma >= 0 else False
+        # if done and self.last_gamma < 0:
+        #     self.add_M(action)
         reward = self.get_reward(gamma)
 
-        done = True if gamma >= 0 else False
-        reward = reward + 10 if done else reward
+        reward = reward + 1 if done else reward
 
         truncated = True if self.episode >= self.max_episode else False
 
@@ -97,12 +103,12 @@ class Env:
 
     def get_reward(self, gamma):
         reward = -0.05
-        if self.len_memory > self.last_len:
-            self.last_len = self.len_memory
-            reward += 0.15
+        # if self.len_memory > self.last_len:
+        #     self.last_len = self.len_memory
+        #     reward += 0.15
         if gamma > self.last_gamma:
             self.last_gamma = gamma
-            reward += 1
+            reward += 1.05
         return reward
 
     def compute_linear_programming(self):
@@ -203,7 +209,8 @@ class Env:
                 break
 
         self.M = res
-        self.origin_state = list(np.sum(np.array(res), axis=0))
+        self.set_M = set([tuple(e) for e in self.M])
+        self.origin_state = list(np.max(np.array(res), axis=0))
         # print(len(self.M), self.first_deg_pos)
 
         self.memory_action = self.M[self.first_deg_pos:]
@@ -248,8 +255,13 @@ class Env:
         return res
 
     def get_state(self, a, b):
-        res = [(x + y) for x, y in zip(a, b)]
+        res = [max(x, y) for x, y in zip(a, b)]
         return res
+
+    def add_M(self, m):
+        if tuple(m) not in self.set_M:
+            self.set_M.add(tuple(m))
+            self.M.append(m)
 
 
 if __name__ == '__main__':

@@ -22,9 +22,11 @@ def main():
     opts = {
         'example': example,
         'epsilon_step': 0.02,
-        'num_episodes': 50,
-        'epsilon': 0.6,
-        'multiple_rewards': 10
+        'num_episodes': 41,
+        'epsilon': -10,
+        'multiple_rewards': 20,
+        'buffer_size': 20000,
+        'batch_size': 5000
     }
     config = ProofConfig(**opts)
     lr, num_episodes, units, gamma, epsilon, epsilon_step, target_update, buffer_size, minimal_size, batch_size, device, multiple_rewards = config.get_config()

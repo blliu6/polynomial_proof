@@ -120,4 +120,4 @@ def get_examples_by_name(name):
 
 
 if __name__ == '__main__':
-    ex = get_examples_by_name('case_1')
+    ex = get_examples_by_name('case_3')
