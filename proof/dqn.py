@@ -111,6 +111,9 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
 
+            if done and i_episode == 40:
+                print(info)
+
             # if done and agent.steps > info and agent.epsilon == 1:
             if done and agent.steps > info:
                 agent.steps, min_episode, end = info, i_episode, timeit.default_timer()
@@ -130,7 +133,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             #     transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r,
             #                        'dones': b_d}
             #     agent.update(transition_dict, env)
-        if i_episode == 40:
+        if i_episode == 39:
             agent.epsilon = 1
             for i in range(20):
                 b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
