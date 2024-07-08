@@ -1,6 +1,7 @@
 import sympy as sp
-from proof.monomials_generate import monomials
+
 from proof.FFT import polynomial_fft
+from proof.monomials_generate import monomials
 
 
 def dfs(n: int, m: int):

@@ -1,6 +1,8 @@
 from math import cos, sin, pi
+from numba import njit
 
 
+@njit
 def fft(a: list, inv, tot, rev: list):
     for i in range(tot):
         if i < rev[i]:

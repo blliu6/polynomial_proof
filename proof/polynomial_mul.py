@@ -1,6 +1,3 @@
-from proof.monomials_generate import monomials
-
-
 def polynomial_mul(a, ops, poly_list, dic):
     # dic = {}
     # for i, e in enumerate(poly_list):

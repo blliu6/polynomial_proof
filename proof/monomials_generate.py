@@ -1,8 +1,9 @@
-import sympy as sp
-import numpy as np
-from functools import reduce
-from sklearn.preprocessing import PolynomialFeatures
 import re
+from functools import reduce
+
+import numpy as np
+import sympy as sp
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def dfs(n: int, m: int):

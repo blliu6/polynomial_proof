@@ -1,13 +1,14 @@
-from proof.polynomial_mul import polynomial_mul, polynomial_mul_
-from proof.monomials_generate import monomials
-from proof.mapping import mul_polynomial_with_fft, get_map
-from proof.Example import Example
-from multiprocessing import Pool
 import multiprocessing as mp
-import numpy as np
+import time
+from multiprocessing import Pool
+
 import cvxpy as cp
+import numpy as np
 import sympy as sp
-import timeit
+
+from proof.Example import Example
+from proof.mapping import mul_polynomial_with_fft, get_map
+from proof.monomials_generate import monomials
 
 
 class Env:
@@ -20,7 +21,7 @@ class Env:
         self.len_vector = len(self.poly)
         self.objective = self.get_objective(example.objective)
 
-        ### fft_poly
+        # fft_poly
         self.poly_map = [get_map(e, self.l + 1) for e in self.poly_list]
         self.dic_forward = dict(zip(range(self.len_vector), self.poly_map))
         self.dic_reverse = dict(zip(self.poly_map, range(self.len_vector)))
@@ -44,13 +45,14 @@ class Env:
         self.len_memory = 0
         self.coefficient_matrix = None
         self.set_memory, self.set_action, self.set_M = None, None, None
-        self.last_gamma, self.last_len = None, None
+        self.last_gamma, self.gamma0, self.last_len = None, None, None
         self.state = None
         self.map = {}
         self.tuple_memory = []
         self.action = None
         self.origin_state = None
         self.memory_initialization()
+        print('Initialization completed!')
 
     def reset(self):
         self.episode = 0
@@ -63,6 +65,7 @@ class Env:
         self.set_action = set([tuple(e) for e in self.action])
         self.tuple_memory = [tuple(e) for e in self.memory]
         self.last_gamma, _ = self.compute_linear_programming()
+        self.gamma0 = abs(self.last_gamma)
 
         # print('reward:', self.last_gamma)
         # state.append(self.len_memory - len(self.M))
@@ -97,18 +100,25 @@ class Env:
 
         truncated = True if self.episode >= self.max_episode else False
 
+        print('state:', self.state[1])
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory, 'len_action:', len(self.action))
+
+        if done:
+            time.sleep(100)
 
         return self.state, reward, done, truncated, self.episode
 
     def get_reward(self, gamma):
-        reward = -0.05
+        # reward = -0.05
         # if self.len_memory > self.last_len:
         #     self.last_len = self.len_memory
         #     reward += 0.15
-        if gamma > self.last_gamma:
-            self.last_gamma = gamma
-            reward += 1.05
+        reward = (gamma - self.last_gamma) / self.gamma0 * 10 - 0.1
+        reward = round(reward, 2)
+        self.last_gamma = gamma
+        # if gamma > self.last_gamma:
+        #     self.last_gamma = gamma
+        #     reward += 1.05
         return reward
 
     def compute_linear_programming(self):
@@ -227,8 +237,7 @@ class Env:
                         self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
         self.A = np.array(action)
 
-        print('self.M', len(res))
-        print('self.A', len(self.A))
+        print(f'M:{len(res)}, A:{len(self.A)}')
         # print(len(action))
         # for item in res:
         #     s = 0
