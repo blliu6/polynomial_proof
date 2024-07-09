@@ -1,15 +1,17 @@
-import sys
-
-sys.path.append('/home/blliu/pythonproject/polynomial_proof')
+# import sys
+#
+# sys.path.append('/home/blliu/pythonproject/polynomial_proof')
 
 import random
 import timeit
+
 import numpy as np
 import torch
-from proof.proof_config import ProofConfig
-from proof.dqn import DQN, train_off_policy_agent
+
 from proof.Env import Env
+from proof.dqn import DQN, train_off_policy_agent
 from proof.plot import plot
+from proof.proof_config import ProofConfig
 from proof.reappear import reappear
 
 

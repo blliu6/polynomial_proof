@@ -53,6 +53,7 @@ class Env:
         self.origin_state = None
         self.memory_initialization()
         print('Initialization completed!')
+        print(f'Length of vector: {self.len_vector}')
 
     def reset(self):
         self.episode = 0
@@ -103,8 +104,8 @@ class Env:
         print('state:', self.state[1])
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory, 'len_action:', len(self.action))
 
-        if done:
-            time.sleep(100)
+        # if done:
+        #     time.sleep(100)
 
         return self.state, reward, done, truncated, self.episode
 
