@@ -22,6 +22,7 @@ def fft(a: list, inv, tot, rev: list):
         mid = (mid << 1)
 
 
+@njit
 def polynomial_fft(a, b, n, m):
     a, b = [complex(e, 0) for e in a], [complex(e, 0) for e in b]
     bit = 0  # 最高位

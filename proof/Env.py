@@ -1,10 +1,10 @@
 import multiprocessing as mp
-import time
 from multiprocessing import Pool
 
 import cvxpy as cp
 import numpy as np
 import sympy as sp
+from numba import njit
 
 from proof.Example import Example
 from proof.mapping import mul_polynomial_with_fft, get_map
@@ -51,6 +51,7 @@ class Env:
         self.tuple_memory = []
         self.action = None
         self.origin_state = None
+        print('Initialization starts!')
         self.memory_initialization()
         print('Initialization completed!')
         print(f'Length of vector: {self.len_vector}')
@@ -86,8 +87,7 @@ class Env:
         if self.len_memory > self.last_len:
             gamma, _ = self.compute_linear_programming()
             # state.append(self.len_memory - len(self.M))
-            state = self.get_state(self.state[1], action)
-            self.state = (tuple(self.tuple_memory), state)
+            self.state = (tuple(self.tuple_memory), self.memory)
             self.map[tuple(self.tuple_memory)] = self.action
         else:
             gamma = self.last_gamma
@@ -97,11 +97,11 @@ class Env:
         #     self.add_M(action)
         reward = self.get_reward(gamma)
 
-        reward = reward + 1 if done else reward
+        # reward = reward + 1 if done else reward
 
         truncated = True if self.episode >= self.max_episode else False
 
-        print('state:', self.state[1])
+        # print('state:', self.state[1])
         print('reward:', reward, 'done:', done, 'len_memory:', self.len_memory, 'len_action:', len(self.action))
 
         # if done:
@@ -153,6 +153,7 @@ class Env:
             state = list(s.T[0])
             # print('s:', s)
             # print('state:', state)
+            s = [[e[0]] if abs(e[0]) > 1e-6 else [0] for e in s]
             print('sum:', sum(self.sp_poly @ s))
             return y.value, state
         else:
@@ -221,8 +222,9 @@ class Env:
 
         self.M = res
         self.set_M = set([tuple(e) for e in self.M])
-        self.origin_state = list(np.max(np.array(res), axis=0))
+        # self.origin_state = list(np.max(np.array(res), axis=0))
         # print(len(self.M), self.first_deg_pos)
+        self.origin_state = res
 
         self.memory_action = self.M[self.first_deg_pos:]
         action = []
@@ -238,7 +240,7 @@ class Env:
                         self.M_deg_map[tuple(new_poly)] = self.M_deg_map[tuple(item)] + 1
         self.A = np.array(action)
 
-        print(f'M:{len(res)}, A:{len(self.A)}')
+        print(f'Initial memory number:{len(res)}, Number of initial action sets:{len(self.A)}')
         # print(len(action))
         # for item in res:
         #     s = 0
@@ -264,14 +266,14 @@ class Env:
             res[dic[key]] += value
         return res
 
-    def get_state(self, a, b):
-        res = [max(x, y) for x, y in zip(a, b)]
-        return res
+    # def get_state(self, a, b):
+    #     res = [max(x, y) for x, y in zip(a, b)]
+    #     return res
 
-    def add_M(self, m):
-        if tuple(m) not in self.set_M:
-            self.set_M.add(tuple(m))
-            self.M.append(m)
+    # def add_M(self, m):
+    #     if tuple(m) not in self.set_M:
+    #         self.set_M.add(tuple(m))
+    #         self.M.append(m)
 
 
 if __name__ == '__main__':

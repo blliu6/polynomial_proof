@@ -1,3 +1,4 @@
+import time
 import timeit
 
 import numpy as np
@@ -72,7 +73,11 @@ class DQN:
         states_original, states = [item[0] for item in states_], [item[1] for item in states_]
         next_states_original, next_states = [item[0] for item in next_states_], [item[1] for item in next_states_]
 
+        print(len(states[0]), len(states[0][0]))
+        time.sleep(1000)
         states = torch.tensor(states, dtype=torch.float).to(self.device)
+        print(states.shape)
+        time.sleep(1000)
         actions = torch.tensor(transition_dict['actions'], dtype=torch.float).to(self.device)
         rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1).to(self.device)
         # next_states = torch.tensor(next_states, dtype=torch.float).to(self.device)
@@ -113,8 +118,8 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
 
-            if done and i_episode == 40:
-                print(info)
+            # if done and i_episode == 40:
+            #     print(info)
 
             # if done and agent.steps > info and agent.epsilon == 1:
             if done and agent.steps > info:
@@ -130,18 +135,12 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             state = next_state
             episode_return += reward
 
-            # if replay_buffer.size() > minimal_size and i_episode > 40:
-            #     b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
-            #     transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r,
-            #                        'dones': b_d}
-            #     agent.update(transition_dict, env)
-        if i_episode == 39:
-            agent.epsilon = 1
-            for i in range(20):
+            if replay_buffer.size() > minimal_size:  # and i_episode > 40:
                 b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
                 transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r,
                                    'dones': b_d}
                 agent.update(transition_dict, env)
+
         return_list.append(episode_return)
         print(f'Sum of reward: {episode_return},agent_steps: {agent.steps}')
     print(f'Minimum number of proof steps:{agent.steps}, Minimum episode:{min_episode}')
