@@ -1,8 +1,7 @@
+import timeit
 from math import cos, sin, pi
-from numba import njit
 
 
-@njit
 def fft(a: list, inv, tot, rev: list):
     for i in range(tot):
         if i < rev[i]:
@@ -22,7 +21,6 @@ def fft(a: list, inv, tot, rev: list):
         mid = (mid << 1)
 
 
-@njit
 def polynomial_fft(a, b, n, m):
     a, b = [complex(e, 0) for e in a], [complex(e, 0) for e in b]
     bit = 0  # 最高位
@@ -44,7 +42,10 @@ def polynomial_fft(a, b, n, m):
 
 
 if __name__ == '__main__':
+    t1 = timeit.default_timer()
     a = [1, 2, 3]
     b = [1, 3]
     res = polynomial_fft(a, b, 2, 1)
     print(res)
+    t2 = timeit.default_timer()
+    print(t2 - t1)
