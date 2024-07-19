@@ -63,6 +63,11 @@ class DQN:
         if np.random.random() > self.epsilon:
             pos = np.random.randint(len(action))
         else:
+            state, prefix = handle([state])
+            state = torch.tensor(state, dtype=torch.float).to(self.device)
+            # print(state.shape, prefix)
+            state = self.feature(state, prefix).cpu().detach().numpy()[0]
+            # print(state.shape)
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
             state = torch.tensor(input, dtype=torch.float).to(self.device)
             pos = self.q_net(state).argmax().item()
@@ -91,14 +96,14 @@ class DQN:
         f_next, next_prefix = handle(next_states)
         f_states = torch.tensor(f_states, dtype=torch.float).to(self.device)
         f_next = torch.tensor(f_next, dtype=torch.float).to(self.device)
-        print(f_states.shape, f_next.shape)
+        # print(f_states.shape, f_next.shape)
         states = self.feature(f_states, s_prefix)
         next_states = self.feature(f_next, next_prefix).cpu().detach().numpy()
 
         # print(len(states[0]), len(states[0][0]))
 
         # states = torch.tensor(states, dtype=torch.float).to(self.device)
-        print(states.shape, next_states.shape)
+        # print(states.shape, next_states.shape)
         # time.sleep(1000)
         actions = torch.tensor(transition_dict['actions'], dtype=torch.float).to(self.device)
         rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1).to(self.device)
