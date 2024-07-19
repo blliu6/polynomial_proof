@@ -1,6 +1,6 @@
-# import sys
-#
-# sys.path.append('/home/blliu/pythonproject/polynomial_proof')
+import sys
+
+sys.path.append('/home/blliu/pythonproject/polynomial_proof')
 
 import random
 import timeit
@@ -24,8 +24,8 @@ def main():
     opts = {
         'example': example,
         'epsilon_step': 0.02,
-        'num_episodes': 41,
-        'epsilon': -10,
+        'num_episodes': 60,
+        'epsilon': 0.8,
         'multiple_rewards': 20,
         'buffer_size': 20000,
         'batch_size': 1000

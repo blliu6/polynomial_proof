@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from proof.ReplayBuffer import ReplayBuffer
+from proof.feature_vector_net import FeatureVectorNet
 
 
 class Qnet(nn.Module):
@@ -24,12 +25,25 @@ class Qnet(nn.Module):
         return self.seq(x)
 
 
+def handle(states):
+    prefix = [0]
+    ans = 0
+    for item in states:
+        ans += len(item)
+        prefix.append(ans)
+
+    res = np.concatenate(states, axis=0)
+    return res, prefix
+
+
 class DQN:
     def __init__(self, state_dim, units, action_dim, learning_rate, gamma, epsilon, target_update, device, name,
                  load=False):
+        self.feature = FeatureVectorNet(state_dim).to(device)
+        self.feature_optimizer = torch.optim.AdamW(self.feature.parameters(), lr=learning_rate)
         self.action_dim = action_dim
-        self.q_net = Qnet(state_dim + action_dim, dense=4, units=units).to(device)
-        self.target_q_net = Qnet(state_dim + action_dim, dense=4, units=units).to(device)
+        self.q_net = Qnet(500 + action_dim, dense=4, units=units).to(device)
+        self.target_q_net = Qnet(500 + action_dim, dense=4, units=units).to(device)
         # self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=learning_rate)
         self.optimizer = torch.optim.RMSprop(self.q_net.parameters(), lr=learning_rate)
         self.gamma = gamma
@@ -67,17 +81,25 @@ class DQN:
         return torch.cat(res, 0)
 
     def update(self, transition_dict, env):
-        states_ = list(transition_dict['states'])
+        states_ = transition_dict['states']
         next_states_ = transition_dict['next_states']
 
         states_original, states = [item[0] for item in states_], [item[1] for item in states_]
         next_states_original, next_states = [item[0] for item in next_states_], [item[1] for item in next_states_]
 
-        print(len(states[0]), len(states[0][0]))
-        time.sleep(1000)
-        states = torch.tensor(states, dtype=torch.float).to(self.device)
-        print(states.shape)
-        time.sleep(1000)
+        f_states, s_prefix = handle(states)
+        f_next, next_prefix = handle(next_states)
+        f_states = torch.tensor(f_states, dtype=torch.float).to(self.device)
+        f_next = torch.tensor(f_next, dtype=torch.float).to(self.device)
+        print(f_states.shape, f_next.shape)
+        states = self.feature(f_states, s_prefix)
+        next_states = self.feature(f_next, next_prefix).cpu().detach().numpy()
+
+        # print(len(states[0]), len(states[0][0]))
+
+        # states = torch.tensor(states, dtype=torch.float).to(self.device)
+        print(states.shape, next_states.shape)
+        # time.sleep(1000)
         actions = torch.tensor(transition_dict['actions'], dtype=torch.float).to(self.device)
         rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1).to(self.device)
         # next_states = torch.tensor(next_states, dtype=torch.float).to(self.device)
@@ -91,8 +113,10 @@ class DQN:
         q_targets = rewards + self.gamma * max_next_q_values * (1 - dones)  # TD误差目标
         dqn_loss = torch.mean(F.mse_loss(q_values, q_targets))  # 均方误差损失函数
         self.optimizer.zero_grad()
+        self.feature_optimizer.zero_grad()
         dqn_loss.backward()
         self.optimizer.step()
+        self.feature_optimizer.step()
         if self.count % self.target_update == 0:
             self.target_q_net.load_state_dict(self.q_net.state_dict())  # 更新目标网络
         self.count += 1
@@ -118,9 +142,6 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             action = agent.take_action(state, env.action)
             next_state, reward, done, truncated, info = env.step(action)
 
-            # if done and i_episode == 40:
-            #     print(info)
-
             # if done and agent.steps > info and agent.epsilon == 1:
             if done and agent.steps > info:
                 agent.steps, min_episode, end = info, i_episode, timeit.default_timer()
@@ -135,7 +156,7 @@ def train_off_policy_agent(env, agent, num_episodes, buffer_size, minimal_size, 
             state = next_state
             episode_return += reward
 
-            if replay_buffer.size() > minimal_size:  # and i_episode > 40:
+            if replay_buffer.size() > minimal_size and replay_buffer.size() >= 10000:  # and i_episode > 40:
                 b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
                 transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r,
                                    'dones': b_d}

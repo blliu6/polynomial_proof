@@ -20,7 +20,7 @@ class FeatureVectorNet(nn.Module):
         x = self.seq(x)
         for i in range(len(prefix) - 1):
             l, r = prefix[i], prefix[i + 1]
-            print(x[l:r, :].max(0)[0])
+            # print(x[l:r, :].max(0)[0])
             res.append(x[l:r, :].max(0)[0].reshape(1, -1))
         return torch.cat(res, 0)
 
