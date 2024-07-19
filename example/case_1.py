@@ -24,8 +24,8 @@ def main():
     opts = {
         'example': example,
         'epsilon_step': 0.02,
-        'num_episodes': 60,
-        'epsilon': 0.8,
+        'num_episodes': 100,
+        'epsilon': -0.3,
         'multiple_rewards': 20,
         'buffer_size': 20000,
         'batch_size': 1000
