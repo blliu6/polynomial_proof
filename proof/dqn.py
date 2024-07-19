@@ -71,6 +71,7 @@ class DQN:
             input = np.concatenate((np.array([state] * len(action)), action), axis=1)
             state = torch.tensor(input, dtype=torch.float).to(self.device)
             pos = self.q_net(state).argmax().item()
+        print(f'pos:{pos}')
         return action[pos]
 
     def get_next_q(self, next_states_original, next_state, action_map):
